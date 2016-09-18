@@ -75,11 +75,17 @@ var jko = function () {
         }
       },
       write: function (value) {
+        if (value === undefined)
+          return;
+        var facts = this.facts();
+        if (facts.length === 1 && facts[0].value === value)
+          return;
+
         var fact = {
           type: type,
           entity: entity,
           value: value,
-          prior: this.facts()
+          prior: facts
         };
         if (user)
           fact.user = user;
