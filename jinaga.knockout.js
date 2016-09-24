@@ -62,7 +62,37 @@ var jko = function () {
     });
   }
 
+  function Collection(parent, template, childConstructor) {
+    this.items = ko.observableArray();
+
+    this.watch = function () {
+      return j.watch(parent, template, addTo(this), removeFrom(this));
+    }
+
+    var map = childConstructor ? function(f) {
+      return new childConstructor(f);
+    } : function (f) {
+      return f;
+    };
+
+    function addTo(collection) {
+      return function (fact) {
+        var obj = map(fact);
+        collection.items.push(obj);
+        return obj;
+      };
+    }
+
+    function removeFrom(collection) {
+      return function (obj) {
+        collection.items.remove(obj);
+      };
+    }
+  }
+
   function Mutable(type, entity, defaultValue, user, resource) {
+    var changing = false;
+
     this.facts = ko.observableArray();
     this.value = ko.computed({
       read: function () {
@@ -75,7 +105,7 @@ var jko = function () {
         }
       },
       write: function (value) {
-        if (value === undefined)
+        if (changing || value === undefined)
           return;
         var facts = this.facts();
         if (facts.length === 1 && facts[0].value === value)
@@ -102,14 +132,18 @@ var jko = function () {
 
     function addTo(mutable) {
       return function (p) {
+        changing = true;
         mutable.facts.push(p);
+        changing = false;
         return p;
       };
     }
 
     function removeFrom(mutable) {
       return function (p) {
+        changing = true;
         mutable.facts.remove(p);
+        changing = false;
       };
     }
 
@@ -141,6 +175,7 @@ var jko = function () {
   return {
     observeStatus: observeStatus,
     observeUser: observeUser,
+    Collection: Collection,
     Mutable: Mutable
   };
 }();
