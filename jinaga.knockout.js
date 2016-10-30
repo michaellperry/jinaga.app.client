@@ -62,7 +62,7 @@ var jko = function () {
     });
   }
 
-  function Collection(parent, template, childConstructor) {
+  function Collection(parent, template, childConstructor, c0, c1, c2, c3, c4, c5, c6, c7, c8, c9) {
     this.items = ko.observableArray();
 
     this.watch = function () {
@@ -70,7 +70,7 @@ var jko = function () {
     }
 
     var map = childConstructor ? function(f) {
-      return new childConstructor(f);
+      return new childConstructor(f, c0, c1, c2, c3, c4, c5, c6, c7, c8, c9);
     } : function (f) {
       return f;
     };
