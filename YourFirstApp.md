@@ -137,7 +137,7 @@ function meetingsInUserGroup(userGroup) {
 }
 ```
 
-*Take a peek [under the hood](https://github.com/michaellperry/jinaga/blob/master/TemplateFunctions.md).*
+*More information on [template functions](https://github.com/michaellperry/jinaga/blob/master/TemplateFunctions.md).*
 
 Add a `Collection` to the `UserGroupViewModel` for meetings matching this template. Call the `watch` function to start watching for these meetings:
 
@@ -149,7 +149,7 @@ this.meetings = new jko.Collection(
 this.meetings.watch();
 ```
 
-*Take a peek [under the hood](https://github.com/michaellperry/jinaga.app.client/blob/master/Collection.md).*
+*More information on [Collection](https://github.com/michaellperry/jinaga.app.client/blob/master/Collection.md).*
 
 This will create a `MeetingViewModel` for each meeting in the user group. Now you can bind the `items` of this collection and see the meeting you just added.
 
@@ -171,36 +171,32 @@ Refresh the browser and see if your meeting appears. If so, click the button and
 
 Now let's put the meeting topic in place. This is a mutable property, meaning that the user can change it over time. The properties of a meeting that we've defined so far (`type`, `createdAt`, and `userGroup`) are immutable, meaning that the user cannot change them.
 
-Define the title as a mutable property inside of the MeetingViewModel constructor. Replace the current definition of `this.name` with the following:
+Define the title as a mutable property inside of the MeetingViewModel constructor. Replace the current definition of `this.title` with the following:
 
 ```JavaScript
-this.name = new jko.Mutable('MyApp.Meeting.Name', meeting, '');
+this.title = new jko.Mutable('MyApp.Meeting.Title', meeting, '');
 ```
+
+*More information on [Mutable](https://github.com/michaellperry/jinaga.app.client/blob/master/Mutable.md).*
 
 The first parameter is the type of the fact representing the mutable property's value. Use the convention
 `Application.Entity.Property`.
 
 The second parameter is the entity that has the property. In this case, it's the meeting.
 
-The third parameter is the default value of the property. Use this to indicate the type of the property.
-Use `''` for strings, `0` for numbers, `{}` for objects, or 'null' for nullable objects.
-
-*Take a peek [under the hood](https://github.com/michaellperry/jinaga.app.client/blob/master/Mutable.md).*
+The third parameter is the default value of the property. Use this to indicate the type of the property. Use `''` for strings, `0` for numbers, `{}` for objects, or 'null' for nullable objects.
 
 ### Watching mutable properties
 
-Create a function to watch for facts matching the generated template functions. Define this on the
-UserGroupViewModel prototype:
+Create a function to watch for facts matching the generated template functions. Define this on the `MeetingViewModel` prototype:
 
 ```JavaScript
-UserGroupViewModel.prototype.watch = function () {
-  this.name.watch();
+MeetingViewModel.prototype.watch = function () {
+  this.title.watch();
 };
 ```
 
-As you add new Mutables to the class, add a call to their `watch` function as well.
-
-Call this function after you create the UserGroupViewModel in the MainViewModel constructor:
+Call this function after you create the `MeetingViewModel` in the MainViewModel constructor:
 
 ```JavaScript
 this.userGroup.watch();
