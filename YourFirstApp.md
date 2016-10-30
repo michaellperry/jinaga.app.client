@@ -174,17 +174,12 @@ Now let's put the meeting topic in place. This is a mutable property, meaning th
 Define the title as a mutable property inside of the MeetingViewModel constructor. Replace the current definition of `this.title` with the following:
 
 ```JavaScript
-this.title = new jko.Mutable('MyApp.Meeting.Title', meeting, '');
+this.title = new jko.Mutable('(new meeting)');
 ```
 
 *More information on [Mutable](https://github.com/michaellperry/jinaga.app.client/blob/master/Mutable.md).*
 
-The first parameter is the type of the fact representing the mutable property's value. Use the convention
-`Application.Entity.Property`.
-
-The second parameter is the entity that has the property. In this case, it's the meeting.
-
-The third parameter is the default value of the property. Use this to indicate the type of the property. Use `''` for strings, `0` for numbers, `{}` for objects, or 'null' for nullable objects.
+The parameter is the default value of the property. This is the value that is displayed if the property hasn't yet been set.
 
 ### Watching mutable properties
 
@@ -201,6 +196,11 @@ Call this function after you create the `MeetingViewModel` in the MainViewModel 
 ```JavaScript
 this.userGroup.watch();
 ```
+
+The first parameter is the type of the fact representing the mutable property's value. Use the convention
+`Application.Entity.Property`.
+
+The second parameter is the entity that has the property. In this case, it's the meeting.
 
 ### Binding to mutable properties
 

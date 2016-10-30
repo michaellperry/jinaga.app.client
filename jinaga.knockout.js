@@ -90,61 +90,42 @@ var jko = function () {
     }
   }
 
-  function Mutable(type, entity, defaultValue, user, resource) {
-    var changing = false;
-
+  function Mutable(defaultValue) {
     this.facts = ko.observableArray();
-    this.value = ko.computed({
-      read: function () {
-        var candidates = this.facts();
-        if (candidates.length === 0) {
-          return defaultValue;
-        }
-        else {
-          return candidates[candidates.length-1].value;
-        }
-      },
-      write: function (value) {
-        if (changing || value === undefined)
-          return;
-        var facts = this.facts();
-        if (facts.length === 1 && facts[0].value === value)
-          return;
 
-        var fact = {
-          type: type,
-          entity: entity,
-          value: value,
-          prior: facts
-        };
-        if (user)
-          fact.user = user;
-        if (resource)
-          fact.in = resource;
-        j.fact(fact);
-      },
-      owner: this
+    this.value = ko.computed(function () {
+      var candidates = this.facts();
+      if (candidates.length === 0) {
+        return defaultValue;
+      }
+      else {
+        return candidates[candidates.length-1].value;
+      }
+    }, this);
+  }
+
+  Mutable.prototype.inConflict = function () {
+    return this.facts().length > 1;
+  };
+
+  Mutable.prototype.candidates = function () {
+    return this.facts().map(function (f) {
+      return f.value;
     });
+  };
 
-    this.watch = function () {
-      j.watch(entity, [mutablesInEntity], addTo(this), removeFrom(this));
-    };
+  function watchMutable(parent, property, type) {
+    return parent.watch([mutablesInEntity], addTo, removeFrom);
 
-    function addTo(mutable) {
-      return function (p) {
-        changing = true;
-        mutable.facts.push(p);
-        changing = false;
-        return p;
-      };
+    function addTo(vm, p) {
+      var mutable = vm[property];
+      mutable.facts.push(p);
+      return p;
     }
 
-    function removeFrom(mutable) {
-      return function (p) {
-        changing = true;
-        mutable.facts.remove(p);
-        changing = false;
-      };
+    function removeFrom(vm, p) {
+      var mutable = vm[property];
+      mutable.facts.remove(p);
     }
 
     function mutablesInEntity(e) {
@@ -162,20 +143,11 @@ var jko = function () {
     }
   }
 
-  Mutable.prototype.inConflict = function () {
-    return this.facts().length > 1;
-  };
-
-  Mutable.prototype.candidates = function () {
-    return this.facts().map(function (f) {
-      return f.value;
-    });
-  };
-
   return {
     observeStatus: observeStatus,
     observeUser: observeUser,
     Collection: Collection,
-    Mutable: Mutable
+    Mutable: Mutable,
+    watchMutable: watchMutable
   };
 }();
