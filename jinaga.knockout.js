@@ -1,5 +1,5 @@
-var jko = function () {
-  function observeStatus(viewModel) {
+var JinagaKnockout = function (j, ko) {
+  this.observeStatus = function(viewModel) {
     viewModel.error = ko.observable();
     viewModel.queueCount = ko.observable();
     viewModel.loading = ko.observable(false);
@@ -19,7 +19,7 @@ var jko = function () {
     j.onLoading(function (loading) { viewModel.loading(loading); });
   }
 
-  function observeUser(viewModel) {
+  this.observeUser = function(viewModel) {
     viewModel.user = ko.observable();
     viewModel.displayName = ko.observable();
 
@@ -90,6 +90,8 @@ var jko = function () {
     }
   }
 
+  this.Collection = Collection;
+
   function Mutable(defaultValue) {
     this.facts = ko.observableArray();
 
@@ -114,7 +116,9 @@ var jko = function () {
     });
   };
 
-  function watchMutable(parent, property, type) {
+  this.Mutable = Mutable;
+
+  this.watchMutable = function(parent, property, type) {
     return parent.watch([mutablesInEntity], addTo, removeFrom);
 
     function addTo(vm, p) {
@@ -142,12 +146,4 @@ var jko = function () {
       });
     }
   }
-
-  return {
-    observeStatus: observeStatus,
-    observeUser: observeUser,
-    Collection: Collection,
-    Mutable: Mutable,
-    watchMutable: watchMutable
-  };
-}();
+};
