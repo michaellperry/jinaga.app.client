@@ -181,7 +181,7 @@ Now let's store and display the real meeting topic. This is a mutable property, 
 Define the title as a mutable property inside of the `MeetingViewModel` constructor. Replace the current definition of `this.title` with the following:
 
 ```JavaScript
-this.title = new jko.Mutable('(new meeting)');
+this.title = new jko.Mutable('MyApp.Meeting.Title', meeting, '(new meeting)');
 ```
 
 *More information on [Mutable](https://github.com/michaellperry/jinaga.app.client/blob/master/Mutable.md).*
@@ -194,7 +194,7 @@ Back in the HTML, modify the binding to show not `title`, but `title.value`:
 
 ```JavaScript
 <div class="row" data-bind="foreach: meetings.items">
-  <div class="columns large-12">
+  <div class="columns large-8">
     <span data-bind="text: title.value"></span>
   </div>
 </div>
@@ -204,11 +204,19 @@ This will display the value of the mutable, or the default value if it hasn't be
 
 ### Watching mutable properties
 
-When you watched the collection of meetings, you actually got back an object that allowed you to nest watches. Go back to the `UserGroupViewModel` and capture this object. Use it to watch the `title` property of all children:
+When you watched the collection of meetings, you actually got back an object that allowed you to nest watches. Go back to the `UserGroupViewModel` and capture this object. Pass it to a function that we're about to write:
 
 ```JavaScript
 var meetingsWatch = this.meetings.watch();
-jko.watchMutable(meetingsWatch, 'title', 'MyApp.Meeting.Title');
+watchMeeting(meetingsWatch);
+```
+
+Now switch to `meeting.js` and write that function. Use the meetings watch to watch the `title` property of all children:
+
+```JavaScript
+function watchMeeting(meetingsWatch) {
+    jko.watchMutable(meetingsWatch, 'title', 'MyApp.Meeting.Title');
+}
 ```
 
 *More information on [watchMutable](https://github.com/michaellperry/jinaga.app.client/blob/master/watchMutable.md).*
@@ -227,15 +235,15 @@ We need to capture the current value of the property so that it doesn't update w
 
 ```JavaScript
 this.edit = function() {
-  vm.editModal({
+  vm.meetingModal({
     title: this.title.capture(),
     save: save
   });
-  $("#meeting-dialog").modal();
+  $('#meeting-modal').foundation('open');
 
   function save() {
-    vm.editModal().title.save('MyApp.Meeting.Title');
-    $('#meeting-details').modal('toggle');
+    vm.meetingModal().title.save('MyApp.Meeting.Title');
+    $('#meeting-modal').foundation('close');
   }
 };
 ```
@@ -243,30 +251,38 @@ this.edit = function() {
 Create a modal dialog in HTML that binds to the `editModal` properties in the main view model. The below example is a Foundation modal.
 
 ```HTML
-<div class="modal fade" id="meeting-dialog" tabindex="-1" role="dialog" aria-labelledby="meeting-dialog-title">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content" data-bind="with: meetingModal">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="meeting-dialog-title">Edit Meeting</h4>
+<div id="meeting-modal" class="reveal" data-reveal>
+  <h1>Edit Meeting</h1>
+  <div data-bind="with: meetingModal">
+    <div class="row">
+      <div class="col-md-4">
+        <label for="meeting-title-edit">Title:</label>
       </div>
-      <div class="modal-body">
-        <div class="row">
-          <div class="col-md-4">
-            <label for="idea-details-title-edit">Title:</label>
-          </div>
-          <div class="col-md-8">
-            <input type="text" name="meeting-title-edit" id="meeting-title-edit" data-bind="value: title.value">
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-bind="click: save">OK</button>
-        <button type="button" class="btn" data-dismiss="modal">Cancel</button>
+      <div class="col-md-8">
+        <input type="text"
+          name="meeting-title-edit" id="meeting-title-edit"
+          data-bind="value: title.value">
       </div>
     </div>
+    <div class="row">
+      <button class="button" data-bind="click: save">OK</button>
+      <button class="button" data-close>Cancel</button>
+    </div>
   </div>
+  <button class="close-button" data-close aria-label="Close modal" type="button">
+    <span aria-hidden="true">&times;</span>
+  </button>
 </div>
 ```
 
 The modal content data binds to the `meetingModal` property of the view model. The text input data binds `title.value`, and the OK button calls `save`. That will update the mutable with any changes that the user made to the value, using the fact type `MyApp.Meeting.Title`.
+
+Create a button on the meeting row to call the edit function.
+
+```HTML
+  <div class="columns large-4">
+    <button class="button" data-bind="click: edit">Edit</button>
+  </div>
+```
+
+Now the modal captures the value of the mutable property and binds it to the modal. When the user edits the property and hits *save*, it records a new fact that represents the change.

@@ -92,7 +92,7 @@ var JinagaKnockout = function (j, ko) {
 
   this.Collection = Collection;
 
-  function Mutable(defaultValue) {
+  function Mutable(type, entity, defaultValue) {
     this.facts = ko.observableArray();
 
     this.value = ko.computed(function () {
@@ -104,6 +104,22 @@ var JinagaKnockout = function (j, ko) {
         return candidates[candidates.length-1].value;
       }
     }, this);
+
+    this.capture = function() {
+      var prior = this.facts();
+      var value = ko.observable(this.value());
+      return {
+        value: value,
+        save: function () {
+          j.fact({
+            type: type,
+            entity: entity,
+            value: value(),
+            prior: prior
+          });
+        }
+      };
+    }
   }
 
   Mutable.prototype.inConflict = function () {
@@ -124,12 +140,11 @@ var JinagaKnockout = function (j, ko) {
     function addTo(vm, p) {
       var mutable = vm[property];
       mutable.facts.push(p);
-      return p;
+      return { mutable: mutable, fact: p };
     }
 
-    function removeFrom(vm, p) {
-      var mutable = vm[property];
-      mutable.facts.remove(p);
+    function removeFrom(pair) {
+      pair.mutable.facts.remove(pair.fact);
     }
 
     function mutablesInEntity(e) {
